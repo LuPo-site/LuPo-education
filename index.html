@@ -31,6 +31,73 @@ body.dark{--bg:#0d0f18;--surface:#151824;--surface2:#1d2130;--text:#f2f3fa;--mut
 .dark .quiz-option.correct{background:#17352b!important;color:var(--text)!important;border-color:#39c98a!important;}
 .dark .quiz-option.wrong{background:#3a1e27!important;color:var(--text)!important;border-color:#ff667c!important;}
 .dark .quiz-letter{background:#292e40!important;color:var(--text)!important;}
+
+/* LuPo Education — amélioration mobile complète */
+@media (max-width: 760px) {
+  :root { --radius: 16px; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 72px; }
+  body { font-size: 15px; line-height: 1.5; }
+  button, a, input, select, textarea { touch-action: manipulation; }
+  button, .btn, .nav-btn, .mobile-nav button { -webkit-tap-highlight-color: transparent; }
+  .topbar { position: sticky; top: 0; min-height: 60px; height: auto; padding: 9px 12px; flex-wrap: nowrap; }
+  .topbar .logo { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+  .topbar .logo > span, .topbar .logo div { min-width: 0; }
+  .topbar .logo:not(.logo-mark) { overflow-wrap: anywhere; }
+  .topbar .logo small { font-size: 8px; }
+  .top-actions { flex: 0 0 auto; }
+  .page { padding-top: 14px; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  .hero { padding: 23px 17px; border-radius: 20px; }
+  .hero h1 { line-height: 1.05; letter-spacing: -.8px; }
+  .hero p { line-height: 1.6; }
+  .hero-buttons { display: grid; grid-template-columns: 1fr; }
+  .hero-buttons .btn { width: 100%; }
+  .grid, .grid-2, .grid-3, .grid-4, .stats-grid, .dashboard-grid { grid-template-columns: minmax(0,1fr) !important; }
+  .card, .panel, .course-card { min-width: 0; max-width: 100%; }
+  .section-head { gap: 8px; }
+  .section-head > * { max-width: 100%; }
+  h1, h2, h3, h4, p, li, label { overflow-wrap: anywhere; }
+  .toolbar { display: flex; flex-direction: column; align-items: stretch; width: 100%; }
+  .toolbar > *, .toolbar .field, .toolbar input, .toolbar select, .toolbar button { width: 100%; min-width: 0; max-width: 100%; }
+  input, select, textarea { min-height: 44px; font-size: 16px !important; }
+  textarea { min-height: 110px; }
+  .btn, button { min-height: 42px; }
+  .btn-sm { min-height: 38px; }
+  .table-wrap, .table-responsive { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 560px; }
+  pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
+  img, video, canvas, iframe { max-width: 100%; }
+  .course-detail, .course-detail .lesson, .lesson, .lesson-content { width: 100%; min-width: 0; max-width: 100%; }
+  .course-detail .lesson { padding: 15px; }
+  .lesson h2, .lesson h3 { line-height: 1.25; }
+  .modal, .dialog, .onboard-box { width: calc(100vw - 24px); max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
+  .mobile-nav { min-height: calc(66px + env(safe-area-inset-bottom)); overflow-x: auto; overscroll-behavior-x: contain; padding-left: max(3px, env(safe-area-inset-left)); padding-right: max(3px, env(safe-area-inset-right)); }
+  .mobile-nav button { flex: 1 0 0; min-width: 0; min-height: 54px; font-size: clamp(9px, 2.7vw, 11px); }
+  .mobile-nav button span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .mobile-nav button:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #8d7fff; outline-offset: 2px; }
+  .calendar-grid { gap: 2px; }
+  .day { min-height: 54px; }
+  .chat { height: calc(100dvh - 230px); min-height: 280px; }
+  .chat-input { display: flex; gap: 7px; }
+  .chat-input input, .chat-input textarea { min-width: 0; flex: 1; }
+  .toast { z-index: 100; bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .sidebar { display: none !important; }
+  .main { margin-left: 0 !important; }
+}
+@media (max-width: 390px) {
+  .page { padding-left: 9px; padding-right: 9px; }
+  .topbar { padding-left: 8px; padding-right: 8px; }
+  .mobile-nav button { gap: 2px; }
+  .mobile-nav button span { font-size: 9px; }
+  .class-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (min-width: 761px) and (max-width: 1050px) {
+  .page { padding: 24px 20px; }
+  .hero { padding: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
 </style>
 </head>
 <body>
