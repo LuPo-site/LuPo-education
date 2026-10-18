@@ -2876,5 +2876,63 @@ init();
 
 
 
+
+
+<!-- Correctif ciblé mobile uniquement : masquer Studio et intégrer les commandes à la barre de l’éditeur. -->
+<style id="lupo-mobile-toolbar-fix">
+@media (max-width:760px){
+  .mobile-nav button[data-page="creative"]{display:none!important}
+  #lupoFixedToolsV15.lupo-mobile-inline{
+    position:relative!important;inset:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+    display:flex!important;flex:1 1 100%;width:100%;max-width:100%;box-sizing:border-box;
+    justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0 0!important;
+    padding:7px;background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:10px;
+    box-shadow:none;z-index:20;font-size:12px;
+  }
+  #lupoFixedToolsV15.lupo-mobile-inline .lft-label{max-width:none;flex:1 1 100%;}
+  #lupoFixedToolsV15.lupo-mobile-inline button{padding:8px 10px;font-size:12px;min-height:36px;}
+}
+</style>
+<script id="lupo-mobile-toolbar-fix-script">
+(function(){
+  function syncMobileTools(){
+    const panel=document.getElementById('lupoFixedToolsV15');
+    if(!panel)return;
+    const mobile=window.matchMedia('(max-width:760px)').matches;
+    if(!mobile){
+      panel.classList.remove('lupo-mobile-inline');
+      if(panel.parentElement!==document.body)document.body.appendChild(panel);
+      panel.style.removeProperty('display');
+      return;
+    }
+    const notes=document.getElementById('page-notes');
+    const editor=document.getElementById('notesEditor');
+    const notesVisible=!!(notes && getComputedStyle(notes).display!=='none');
+    const editorVisible=!!(editor && !editor.classList.contains('hidden') && getComputedStyle(editor).display!=='none');
+    if(!notesVisible || !editorVisible){
+      panel.style.setProperty('display','none','important');
+      panel.classList.remove('lupo-mobile-inline');
+      if(panel.parentElement!==document.body)document.body.appendChild(panel);
+      return;
+    }
+    const toolbar=editor.querySelector('.notes-toolbar') || editor.querySelector('.lupo-context-toolbar');
+    if(toolbar){
+      if(panel.parentElement!==toolbar)toolbar.appendChild(panel);
+      panel.classList.add('lupo-mobile-inline');
+      panel.style.removeProperty('display');
+    }
+  }
+  function start(){
+    syncMobileTools();
+    window.addEventListener('resize',syncMobileTools,{passive:true});
+    window.addEventListener('orientationchange',syncMobileTools,{passive:true});
+    document.addEventListener('click',function(){setTimeout(syncMobileTools,80)},true);
+    const mo=new MutationObserver(()=>syncMobileTools());
+    mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
 </body>
 </html>
