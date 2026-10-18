@@ -2840,5 +2840,71 @@ init();
 })();
 </script>
 
+
+
+<!-- Correctif mobile : les commandes Rotation/4K restent dans Mes fiches,
+     juste au-dessus du canevas, et ne recouvrent plus la navigation. PC inchangé. -->
+<style id="lupo-mobile-tools-position-fix">
+@media (max-width:760px) {
+  #page-notes #lupoFixedToolsV15,
+  #lupoFixedToolsV15.lupo-editor-tools-visible {
+    position:relative!important;
+    inset:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    z-index:4!important;
+    display:flex!important;
+    flex:0 0 auto!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:8px 0!important;
+    padding:8px!important;
+    justify-content:flex-start!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+    gap:6px!important;
+    border-radius:12px!important;
+  }
+  #page-notes #lupoFixedToolsV15 .lft-label { flex:1 1 100%; max-width:none!important; }
+  #page-notes #lupoFixedToolsV15 button { min-height:40px; flex:1 1 auto; }
+}
+</style>
+<script id="lupo-mobile-tools-position-fix-script">
+(function(){
+  function placeTools(){
+    var panel=document.getElementById('lupoFixedToolsV15');
+    var page=document.getElementById('page-notes');
+    if(!panel || !page) return;
+    var mobile=window.matchMedia && window.matchMedia('(max-width:760px)').matches;
+    var visible=page.getClientRects().length>0 && getComputedStyle(page).display!=='none';
+    if(mobile && visible){
+      var workspace=page.querySelector('.notes-workspace');
+      var wrap=page.querySelector('.notes-canvas-wrap');
+      var target=workspace || page;
+      if(wrap && wrap.parentNode===target){
+        if(panel.parentNode!==target || panel.nextElementSibling!==wrap) target.insertBefore(panel,wrap);
+      }else if(panel.parentNode!==target){ target.appendChild(panel); }
+      panel.classList.add('lupo-editor-tools-visible');
+    }else{
+      if(panel.parentNode!==document.body) document.body.appendChild(panel);
+    }
+  }
+  function init(){
+    placeTools();
+    window.addEventListener('resize',placeTools,{passive:true});
+    document.addEventListener('click',function(e){
+      if(e.target && e.target.closest && e.target.closest('[data-page="notes"], nav, .sidebar, .nav-item, .sidebar-link')){
+        requestAnimationFrame(placeTools); setTimeout(placeTools,100); setTimeout(placeTools,350);
+      }
+    },true);
+    var page=document.getElementById('page-notes');
+    if(page && window.MutationObserver) new MutationObserver(placeTools).observe(page,{attributes:true,childList:true,subtree:true,attributeFilter:['style','class','hidden']});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+})();
+</script>
+
 </body>
 </html>
