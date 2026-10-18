@@ -2547,5 +2547,298 @@ init();
 })();
 </script>
 
+
+<!-- LuPo Education : couche de refonte mobile isolée.
+     Tous les styles ci-dessous sont limités aux écrans <= 760px.
+     La version PC et les scripts métier existants sont conservés. -->
+<style id="lupo-mobile-rebuild">
+@media (max-width:760px) {
+  :root {
+    --lupo-mobile-gutter: 12px;
+    --lupo-mobile-nav-height: 76px;
+  }
+  html, body {
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overscroll-behavior-x:none;
+  }
+  body { padding-bottom:0; }
+  .main { width:100%; min-width:0; margin:0!important; }
+  .topbar {
+    display:flex;
+    width:100%;
+    min-width:0;
+    gap:8px;
+    padding:8px var(--lupo-mobile-gutter);
+    min-height:60px;
+    height:auto;
+    z-index:40;
+  }
+  .topbar .logo { flex:1 1 auto; min-width:0; max-width:55%; }
+  .topbar .logo > * { min-width:0; }
+  .topbar .logo-mark { flex:0 0 34px; }
+  .topbar .logo div { overflow:hidden; }
+  .topbar .logo small { overflow:hidden; text-overflow:ellipsis; }
+  .top-actions { flex:0 0 auto; gap:6px; }
+  .top-actions .icon-btn { width:40px; height:40px; min-width:40px; }
+  .page {
+    width:100%;
+    min-width:0;
+    max-width:none;
+    margin:0;
+    padding:16px var(--lupo-mobile-gutter) calc(var(--lupo-mobile-nav-height) + 22px + env(safe-area-inset-bottom));
+    overflow-wrap:anywhere;
+  }
+  .page > *, .page .card, .page .panel { min-width:0; max-width:100%; }
+  .hero { padding:24px 18px; border-radius:20px; }
+  .hero h1 { font-size:clamp(30px,8.8vw,42px); overflow-wrap:anywhere; }
+  .hero p { font-size:15px; }
+  .hero-buttons { display:flex; flex-direction:column; align-items:stretch; }
+  .hero-buttons .btn { width:100%; }
+  .grid, .grid-2, .grid-3, .grid-4, .stats-grid, .dashboard-grid {
+    grid-template-columns:minmax(0,1fr)!important;
+    min-width:0;
+  }
+  .grid { gap:12px; }
+  .card { padding:16px; border-radius:17px; }
+  .section-head { align-items:flex-start; flex-direction:column; gap:8px; }
+  .section-head > * { max-width:100%; }
+  .toolbar { display:flex; flex-direction:column; align-items:stretch; gap:8px; }
+  .toolbar > *, .toolbar .field, .toolbar button, .toolbar select, .toolbar input {
+    width:100%; min-width:0; max-width:100%;
+  }
+  .field, input, select, textarea { max-width:100%; }
+  input, select, textarea { font-size:16px; }
+  button, .btn, a { -webkit-tap-highlight-color:transparent; }
+  .btn, button { touch-action:manipulation; }
+  .table-wrap, .table-responsive, .calendar-wrap {
+    max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  }
+  .table-wrap table, .table-responsive table { min-width:560px; }
+  .calendar-grid { min-width:0; }
+  .course-detail { width:100%; min-width:0; }
+  .course-detail h1 { font-size:clamp(27px,7.5vw,35px); line-height:1.12; }
+  .lesson { padding:15px; }
+  .modal {
+    width:calc(100vw - 20px)!important;
+    max-width:calc(100vw - 20px)!important;
+    max-height:calc(100dvh - 20px - env(safe-area-inset-bottom));
+    padding:17px;
+    overflow:auto;
+    overscroll-behavior:contain;
+  }
+  .overlay { padding:10px; }
+  .form-grid { grid-template-columns:minmax(0,1fr); }
+  .form-group.full { grid-column:auto; }
+  .chat { height:calc(100dvh - 230px); min-height:300px; }
+  .msg { max-width:90%; overflow-wrap:anywhere; }
+  .toast { left:10px; right:10px; bottom:calc(var(--lupo-mobile-nav-height) + env(safe-area-inset-bottom)); z-index:120; }
+
+  /* Navigation mobile : toutes les destinations restent accessibles,
+     sans réduire les huit boutons à une taille illisible. */
+  .mobile-nav {
+    display:flex!important;
+    position:fixed;
+    left:0; right:0; bottom:0;
+    width:100%;
+    height:calc(var(--lupo-mobile-nav-height) + env(safe-area-inset-bottom));
+    padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-right));
+    justify-content:flex-start;
+    align-items:stretch;
+    gap:4px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
+    background:var(--surface);
+    border-top:1px solid var(--line);
+    z-index:80;
+  }
+  .mobile-nav button {
+    flex:0 0 68px;
+    width:68px;
+    min-width:68px;
+    max-width:68px;
+    min-height:54px;
+    height:100%;
+    padding:6px 3px;
+    margin:0;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    background:transparent;
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.15;
+    white-space:normal;
+  }
+  .mobile-nav button:first-child { margin-left:0; }
+  .mobile-nav button.active { color:var(--primary); background:var(--surface2); }
+  .mobile-nav button span {
+    display:block;
+    width:100%;
+    max-width:100%;
+    overflow:visible;
+    text-overflow:clip;
+    white-space:normal;
+    text-align:center;
+    font-size:10px;
+  }
+  body.dark .mobile-nav { background:rgba(21,24,36,.98); }
+  body.dark .mobile-nav button { color:var(--muted); }
+  body.dark .mobile-nav button.active { color:var(--primary2); background:var(--surface2); }
+
+  /* Editeur de fiches : outils dans le flux, canevas centré et zoom adapté.
+     Les commandes et éléments restent ceux du véritable éditeur. */
+  #page-notes .lupo-editor-layout {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    width:100%;
+    min-width:0;
+  }
+  #page-notes #lupoLibraryTabs {
+    order:0;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:7px;
+    width:100%;
+    overflow-x:auto;
+    padding:2px 1px 7px;
+    -webkit-overflow-scrolling:touch;
+  }
+  #page-notes #lupoLibraryTabs button {
+    flex:0 0 auto;
+    min-height:42px;
+    white-space:nowrap;
+  }
+  #page-notes #lupoLibraryPanel {
+    order:1;
+    display:block;
+    width:100%;
+    min-width:0;
+    max-height:none;
+    overflow:visible;
+  }
+  #page-notes .notes-sidebar { display:none!important; }
+  #page-notes .notes-workspace {
+    order:2;
+    display:block;
+    width:100%;
+    min-width:0;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    padding:8px;
+    overflow:visible;
+  }
+  #page-notes .lupo-context-toolbar {
+    position:relative!important;
+    top:auto!important;
+    z-index:5;
+    display:flex;
+    flex-wrap:wrap!important;
+    width:100%;
+    max-width:100%;
+    overflow:visible!important;
+    gap:5px;
+    padding:7px;
+  }
+  #page-notes .lupo-context-toolbar > * { flex:0 0 auto; max-width:100%; }
+  #page-notes .lupo-context-toolbar button,
+  #page-notes .lupo-context-toolbar select { min-height:38px; }
+  #page-notes .lupo-library-grid { grid-template-columns:repeat(3,minmax(0,1fr))!important; }
+  #page-notes .notes-canvas-wrap {
+    display:block!important;
+    position:relative;
+    width:100%;
+    min-width:0!important;
+    max-width:100%;
+    height:var(--lupo-mobile-canvas-height, 490px);
+    min-height:var(--lupo-mobile-canvas-height, 490px);
+    padding:8px 0!important;
+    margin:0;
+    overflow:auto!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x pan-y;
+  }
+  #page-notes .notes-canvas {
+    width:794px!important;
+    height:1123px!important;
+    max-width:none!important;
+    flex:none;
+    transform:scale(var(--lupo-mobile-canvas-scale,.42))!important;
+    transform-origin:top left!important;
+    margin:0!important;
+    border-radius:3px;
+    touch-action:pan-x pan-y;
+  }
+  #page-notes .note-element.selected {
+    resize:none!important;
+    overflow:visible!important;
+  }
+  #page-notes .note-resize-handle { width:14px; height:14px; }
+  #page-notes .notes-toolbar { display:flex; flex-wrap:wrap; gap:6px; }
+  #page-notes .notes-toolbar .btn { flex:1 1 auto; min-height:40px; }
+  #page-notes .notes-status { overflow-wrap:anywhere; }
+  #page-notes .note-shape-gallery { grid-template-columns:repeat(4,minmax(0,1fr)); }
+
+  /* Galerie créative et panneaux : éviter les colonnes trop étroites. */
+  .lab-grid, .lab-showcase { grid-template-columns:minmax(0,1fr)!important; }
+  .lab-stat-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+  .lab-control-grid { grid-template-columns:minmax(0,1fr)!important; }
+  .lab-big-preview { min-width:0; min-height:300px; }
+  .lab-export-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .lab-export-row .btn { min-width:0; }
+}
+@media (max-width:390px) {
+  .mobile-nav button { flex-basis:64px; min-width:64px; max-width:64px; }
+  #page-notes .lupo-library-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+  #page-notes .lupo-context-toolbar { gap:4px; }
+  #page-notes .lupo-context-toolbar button { padding:5px 7px; }
+  .lab-export-row { grid-template-columns:minmax(0,1fr); }
+}
+</style>
+<script id="lupo-mobile-rebuild-script">
+(function(){
+  'use strict';
+  function fitNotesCanvas(){
+    if(!window.matchMedia || !window.matchMedia('(max-width: 760px)').matches) return;
+    var page=document.getElementById('page-notes');
+    if(!page) return;
+    var wrap=page.querySelector('.notes-canvas-wrap');
+    var canvas=page.querySelector('.notes-canvas');
+    if(!wrap || !canvas) return;
+    var available=Math.max(240, Math.min(wrap.clientWidth || (window.innerWidth-32), window.innerWidth-24));
+    var scale=Math.min(0.62, Math.max(0.30, (available-4)/794));
+    canvas.style.setProperty('--lupo-mobile-canvas-scale', String(scale));
+    wrap.style.setProperty('--lupo-mobile-canvas-height', Math.ceil(1123*scale+18)+'px');
+    /* Le canvas conserve ses coordonnées internes : seul son affichage est réduit. */
+  }
+  function initMobileLayer(){
+    fitNotesCanvas();
+    window.addEventListener('resize', fitNotesCanvas, {passive:true});
+    window.addEventListener('orientationchange', function(){ window.setTimeout(fitNotesCanvas,120); }, {passive:true});
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.closest && e.target.closest('[data-page="notes"], #page-notes #lupoLibraryTabs button')){
+        window.setTimeout(fitNotesCanvas,80);
+        window.setTimeout(fitNotesCanvas,300);
+      }
+    }, true);
+    var page=document.getElementById('page-notes');
+    if(page && window.MutationObserver){
+      new MutationObserver(function(){ fitNotesCanvas(); }).observe(page,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initMobileLayer,{once:true});
+  else initMobileLayer();
+})();
+</script>
+
 </body>
 </html>
