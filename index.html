@@ -3064,5 +3064,112 @@ init();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
+
+<style id="lupo-preview-readonly-style">
+@media (max-width:760px){
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-workspace{
+   display:flex!important;flex-direction:column!important;align-items:center!important;
+   min-height:0!important;height:calc(100dvh - 58px)!important;overflow:hidden!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #lupo-mobile-view-controls{
+   position:fixed!important;left:8px!important;right:8px!important;top:max(6px,env(safe-area-inset-top))!important;
+   width:auto!important;margin:0!important;justify-content:flex-start!important;
+   background:transparent!important;border:0!important;padding:0!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #lupo-mobile-view-controls button:not([data-action="fullscreen"]){display:none!important}
+ body.lupo-mobile-fiche-fullscreen #page-notes #lupo-mobile-view-controls [data-action="fullscreen"]{
+   display:inline-flex!important;background:#fff!important;color:#172033!important;border:1px solid #d0d5df!important;
+   box-shadow:0 2px 10px #0002!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-canvas-wrap{
+   flex:1 1 auto!important;min-height:0!important;width:100%!important;max-width:100%!important;
+   display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas{
+   transform-origin:center center!important;max-width:none!important;flex-shrink:0!important;
+   pointer-events:none!important;user-select:none!important;-webkit-user-select:none!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas *{
+   pointer-events:none!important;user-select:none!important;-webkit-user-select:none!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas .note-resize-handle,
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas .note-vertex-handle,
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas .selected,
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-workspace> :not(#lupo-mobile-view-controls):not(.notes-canvas-wrap){
+   display:none!important;
+ }
+}
+</style>
+<script id="lupo-preview-readonly-script">
+(function(){
+ 'use strict';
+ function init(){
+  const page=document.getElementById('page-notes');
+  const controls=document.getElementById('lupo-mobile-view-controls');
+  if(!page||!controls||controls.dataset.previewReadonly==='1')return;
+  controls.dataset.previewReadonly='1';
+  const button=controls.querySelector('[data-action="fullscreen"]');
+  if(!button)return;
+  let originalTransform='',originalMargin='',originalOrigin='',originalContentEditable=[];
+  function fitWholeSheet(){
+   const canvas=page.querySelector('#notesCanvas');
+   const wrap=page.querySelector('.notes-canvas-wrap');
+   if(!canvas||!wrap)return;
+   if(!canvas.dataset.previewOriginal){
+    canvas.dataset.previewOriginal='1';
+    originalTransform=canvas.style.transform;
+    originalMargin=canvas.style.marginBottom;
+    originalOrigin=canvas.style.transformOrigin;
+   }
+   const rect=canvas.getBoundingClientRect();
+   const width=canvas.offsetWidth||rect.width;
+   const height=canvas.offsetHeight||rect.height;
+   const availableW=Math.max(120,wrap.clientWidth-16);
+   const availableH=Math.max(120,wrap.clientHeight-20);
+   if(!width||!height)return;
+   const scale=Math.min(availableW/width,availableH/height,1);
+   canvas.style.setProperty('transform-origin','center center','important');
+   canvas.style.setProperty('transform','scale('+scale+')','important');
+   canvas.style.setProperty('margin-bottom','0','important');
+   canvas.style.setProperty('pointer-events','none','important');
+   canvas.querySelectorAll('[contenteditable="true"]').forEach(el=>{
+    el.dataset.previewWasEditable='1';el.setAttribute('contenteditable','false');
+   });
+  }
+  function setPreview(active){
+   if(active){
+    document.body.classList.add('lupo-mobile-fiche-fullscreen');
+    // Wait for the fullscreen layout to settle before measuring the available area.
+    requestAnimationFrame(()=>requestAnimationFrame(fitWholeSheet));
+    window.addEventListener('resize',fitWholeSheet);
+    window.addEventListener('orientationchange',fitWholeSheet);
+   }else{
+    document.body.classList.remove('lupo-mobile-fiche-fullscreen');
+    window.removeEventListener('resize',fitWholeSheet);
+    window.removeEventListener('orientationchange',fitWholeSheet);
+    const canvas=page.querySelector('#notesCanvas');
+    if(canvas){
+     canvas.style.removeProperty('pointer-events');
+     if(originalTransform)canvas.style.transform=originalTransform;else canvas.style.removeProperty('transform');
+     if(originalMargin)canvas.style.marginBottom=originalMargin;else canvas.style.removeProperty('margin-bottom');
+     if(originalOrigin)canvas.style.transformOrigin=originalOrigin;else canvas.style.removeProperty('transform-origin');
+     canvas.querySelectorAll('[data-preview-was-editable="1"]').forEach(el=>{
+      el.setAttribute('contenteditable','true');delete el.dataset.previewWasEditable;
+     });
+    }
+   }
+  }
+  button.addEventListener('click',function(){
+   if(!window.matchMedia('(max-width:760px)').matches)return;
+   setTimeout(()=>setPreview(document.body.classList.contains('lupo-mobile-fiche-fullscreen')),0);
+  });
+  document.addEventListener('fullscreenchange',()=>{
+   if(!document.fullscreenElement&&!document.body.classList.contains('lupo-mobile-fiche-fullscreen'))setPreview(false);
+  });
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
 </body>
 </html>
