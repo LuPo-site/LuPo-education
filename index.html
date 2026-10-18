@@ -2927,8 +2927,8 @@ init();
     window.addEventListener('resize',syncMobileTools,{passive:true});
     window.addEventListener('orientationchange',syncMobileTools,{passive:true});
     document.addEventListener('click',function(){setTimeout(syncMobileTools,80)},true);
-    const mo=new MutationObserver(()=>syncMobileTools());
-    mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style']});
+    /* Pas de MutationObserver global ici : déplacer le panneau modifie le DOM
+       et peut déclencher une boucle infinie qui bloque tout le site. */
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
