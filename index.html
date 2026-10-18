@@ -3020,74 +3020,49 @@ init();
 
 
 <style id="lupo-mobile-zoom-fullscreen-style">
-@media (max-width:760px){
+@media(max-width:760px){
  #lupo-mobile-view-controls{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;width:100%;box-sizing:border-box;padding:8px;margin:0 0 10px;position:relative;z-index:30;background:var(--panel-bg,#f5f6fa);border:1px solid rgba(128,128,128,.25);border-radius:12px}
- #lupo-mobile-view-controls button{appearance:none;border:1px solid rgba(128,128,128,.35);border-radius:9px;min-height:38px;padding:7px 11px;font:inherit;font-size:14px;background:var(--card-bg,#fff);color:var(--text-color,#202433);touch-action:manipulation}
+ #lupo-mobile-view-controls button,#lupo-mobile-fullscreen-return{appearance:none;border:1px solid rgba(128,128,128,.35);border-radius:9px;min-height:38px;padding:7px 11px;font:inherit;font-size:14px;background:var(--card-bg,#fff);color:var(--text-color,#202433);touch-action:manipulation}
  #lupo-mobile-zoom-value{min-width:48px;text-align:center;font-size:13px}
+ #lupo-mobile-fiche-overlay{display:none}
  body.lupo-mobile-fiche-fullscreen{overflow:hidden!important}
- body.lupo-mobile-fiche-fullscreen #page-notes{position:fixed!important;inset:0!important;z-index:99990!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;overflow:auto!important;margin:0!important;border-radius:0!important;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))!important;background:var(--page-bg,#fff)}
- body.lupo-mobile-fiche-fullscreen #lupo-mobile-view-controls{position:sticky;top:0;z-index:99999}
- body.lupo-mobile-fiche-fullscreen #page-notes .notes-workspace{min-height:calc(100dvh - 70px)!important}
- body.lupo-mobile-fiche-fullscreen #page-notes .notes-canvas-wrap{max-width:none!important;overflow:auto!important}
+ body.lupo-mobile-fiche-fullscreen #lupo-mobile-fiche-overlay{display:flex!important;position:fixed!important;inset:0!important;z-index:2147483000!important;width:100vw!important;height:100vh!important;height:100dvh!important;box-sizing:border-box;flex-direction:column;gap:8px;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));background:#f7f8fc;color:#171923;overflow:hidden}
+ body.lupo-mobile-fiche-fullscreen #lupo-mobile-fullscreen-return{align-self:flex-start;flex:0 0 auto;background:#fff;color:#171923}
+ body.lupo-mobile-fiche-fullscreen #lupo-mobile-fiche-stage{flex:1 1 auto;min-height:0;width:100%;overflow:auto;display:flex;align-items:flex-start;justify-content:center;background:#fff;border-radius:8px;touch-action:pan-x pan-y}
+ body.lupo-mobile-fiche-fullscreen #lupo-mobile-fiche-stage .notes-canvas-wrap{flex:0 0 auto!important;max-width:none!important;overflow:visible!important;margin:0 auto!important}
 }
-@media (min-width:761px){#lupo-mobile-view-controls{display:none!important}}
+@media(min-width:761px){#lupo-mobile-view-controls,#lupo-mobile-fiche-overlay{display:none!important}}
 </style>
 <script id="lupo-mobile-zoom-fullscreen-script">
 (function(){
  'use strict';
  function init(){
   const page=document.getElementById('page-notes');
-  if(!page||page.dataset.lupoViewControls==='1')return;
-  page.dataset.lupoViewControls='1';
+  if(!page||page.dataset.lupoViewControls==='2')return;
+  page.dataset.lupoViewControls='2';
   const mobile=()=>window.matchMedia('(max-width:760px)').matches;
   const workspace=page.querySelector('.notes-workspace')||page;
-  const controls=document.createElement('div');
-  controls.id='lupo-mobile-view-controls';
-  controls.setAttribute('aria-label','Affichage mobile de la fiche');
+  const wrap=page.querySelector('.notes-canvas-wrap');
+  const canvas=page.querySelector('#notesCanvas');
+  if(!wrap||!canvas)return;
+  const controls=document.createElement('div');controls.id='lupo-mobile-view-controls';
   controls.innerHTML='<button type="button" data-action="minus" aria-label="Dézoomer">−</button><span id="lupo-mobile-zoom-value">100%</span><button type="button" data-action="plus" aria-label="Zoomer">+</button><button type="button" data-action="fit">Adapter</button><button type="button" data-action="fullscreen">⛶ Plein écran</button>';
-  let zoom=1;
-  function target(){return page.querySelector('#notesCanvas')||page.querySelector('.notes-canvas-wrap')}
-  function setZoom(value){
-   zoom=Math.max(.4,Math.min(2.5,value));
-   const el=target();if(!el)return;
-   el.style.transformOrigin='top center';
-   el.style.transform='scale('+zoom+')';
-   el.style.marginBottom=(zoom-1)*Math.max(0,el.offsetHeight)+'px';
-   controls.querySelector('#lupo-mobile-zoom-value').textContent=Math.round(zoom*100)+'%';
-  }
-  function showControls(){controls.style.display=mobile()?'flex':'none'}
-  function fullscreen(active){
-   document.body.classList.toggle('lupo-mobile-fiche-fullscreen',active);
-   const btn=controls.querySelector('[data-action="fullscreen"]');
-   btn.textContent=active?'⤢ Quitter le plein écran':'⛶ Plein écran';
-   if(active&&page.requestFullscreen&&!document.fullscreenElement){
-    const p=page.requestFullscreen();if(p&&p.catch)p.catch(function(){});
-   }else if(!active&&document.fullscreenElement&&document.exitFullscreen){
-    const p=document.exitFullscreen();if(p&&p.catch)p.catch(function(){});
-   }
-  }
-  controls.addEventListener('click',function(ev){
-   const btn=ev.target.closest('button');if(!btn||!mobile())return;
-   switch(btn.dataset.action){
-    case 'minus':setZoom(zoom-.1);break;
-    case 'plus':setZoom(zoom+.1);break;
-    case 'fit':setZoom(1);break;
-    case 'fullscreen':fullscreen(!document.body.classList.contains('lupo-mobile-fiche-fullscreen'));break;
-   }
-  });
+  const overlay=document.createElement('div');overlay.id='lupo-mobile-fiche-overlay';
+  overlay.innerHTML='<button type="button" id="lupo-mobile-fullscreen-return">← Retour à l’éditeur</button><div id="lupo-mobile-fiche-stage"></div>';
+  document.body.appendChild(overlay);
+  const stage=overlay.querySelector('#lupo-mobile-fiche-stage');
+  let zoom=1,oldParent=null,oldNext=null,fullscreen=false;
+  function setZoom(v){zoom=Math.max(.4,Math.min(2.5,v));wrap.style.transformOrigin='top center';wrap.style.transform='scale('+zoom+')';wrap.style.marginBottom=((zoom-1)*wrap.offsetHeight)+'px';const lab=controls.querySelector('#lupo-mobile-zoom-value');if(lab)lab.textContent=Math.round(zoom*100)+'%';}
+  function enterFullscreen(){if(!mobile()||fullscreen)return;fullscreen=true;oldParent=wrap.parentNode;oldNext=wrap.nextSibling;stage.appendChild(wrap);document.body.classList.add('lupo-mobile-fiche-fullscreen');setTimeout(()=>{stage.scrollTop=0;},0);}
+  function exitFullscreen(){if(!fullscreen)return;fullscreen=false;document.body.classList.remove('lupo-mobile-fiche-fullscreen');if(oldParent&&oldParent.isConnected){if(oldNext&&oldNext.parentNode===oldParent)oldParent.insertBefore(wrap,oldNext);else oldParent.appendChild(wrap);}wrap.style.transform='';wrap.style.marginBottom='';zoom=1;controls.querySelector('#lupo-mobile-zoom-value').textContent='100%';}
+  controls.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||!mobile())return;switch(b.dataset.action){case'minus':setZoom(zoom-.1);break;case'plus':setZoom(zoom+.1);break;case'fit':setZoom(1);break;case'fullscreen':enterFullscreen();break;}});
+  overlay.querySelector('#lupo-mobile-fullscreen-return').addEventListener('click',exitFullscreen);
   workspace.insertBefore(controls,workspace.firstChild);
-  showControls();
-  window.addEventListener('resize',showControls);
-  window.addEventListener('orientationchange',showControls);
-  document.addEventListener('fullscreenchange',function(){
-   if(!document.fullscreenElement&&!document.body.classList.contains('lupo-mobile-fiche-fullscreen')){
-    const btn=controls.querySelector('[data-action="fullscreen"]');if(btn)btn.textContent='⛶ Plein écran';
-   }
-  });
+  function update(){if(!mobile()&&fullscreen)exitFullscreen();controls.style.display=mobile()?'flex':'none';}
+  window.addEventListener('resize',update);window.addEventListener('orientationchange',update);update();
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
-
 </body>
 </html>
