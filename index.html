@@ -3018,5 +3018,76 @@ init();
 })();
 </script>
 
+
+<style id="lupo-mobile-zoom-fullscreen-style">
+@media (max-width:760px){
+ #lupo-mobile-view-controls{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;width:100%;box-sizing:border-box;padding:8px;margin:0 0 10px;position:relative;z-index:30;background:var(--panel-bg,#f5f6fa);border:1px solid rgba(128,128,128,.25);border-radius:12px}
+ #lupo-mobile-view-controls button{appearance:none;border:1px solid rgba(128,128,128,.35);border-radius:9px;min-height:38px;padding:7px 11px;font:inherit;font-size:14px;background:var(--card-bg,#fff);color:var(--text-color,#202433);touch-action:manipulation}
+ #lupo-mobile-zoom-value{min-width:48px;text-align:center;font-size:13px}
+ body.lupo-mobile-fiche-fullscreen{overflow:hidden!important}
+ body.lupo-mobile-fiche-fullscreen #page-notes{position:fixed!important;inset:0!important;z-index:99990!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;overflow:auto!important;margin:0!important;border-radius:0!important;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))!important;background:var(--page-bg,#fff)}
+ body.lupo-mobile-fiche-fullscreen #lupo-mobile-view-controls{position:sticky;top:0;z-index:99999}
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-workspace{min-height:calc(100dvh - 70px)!important}
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-canvas-wrap{max-width:none!important;overflow:auto!important}
+}
+@media (min-width:761px){#lupo-mobile-view-controls{display:none!important}}
+</style>
+<script id="lupo-mobile-zoom-fullscreen-script">
+(function(){
+ 'use strict';
+ function init(){
+  const page=document.getElementById('page-notes');
+  if(!page||page.dataset.lupoViewControls==='1')return;
+  page.dataset.lupoViewControls='1';
+  const mobile=()=>window.matchMedia('(max-width:760px)').matches;
+  const workspace=page.querySelector('.notes-workspace')||page;
+  const controls=document.createElement('div');
+  controls.id='lupo-mobile-view-controls';
+  controls.setAttribute('aria-label','Affichage mobile de la fiche');
+  controls.innerHTML='<button type="button" data-action="minus" aria-label="Dézoomer">−</button><span id="lupo-mobile-zoom-value">100%</span><button type="button" data-action="plus" aria-label="Zoomer">+</button><button type="button" data-action="fit">Adapter</button><button type="button" data-action="fullscreen">⛶ Plein écran</button>';
+  let zoom=1;
+  function target(){return page.querySelector('#notesCanvas')||page.querySelector('.notes-canvas-wrap')}
+  function setZoom(value){
+   zoom=Math.max(.4,Math.min(2.5,value));
+   const el=target();if(!el)return;
+   el.style.transformOrigin='top center';
+   el.style.transform='scale('+zoom+')';
+   el.style.marginBottom=(zoom-1)*Math.max(0,el.offsetHeight)+'px';
+   controls.querySelector('#lupo-mobile-zoom-value').textContent=Math.round(zoom*100)+'%';
+  }
+  function showControls(){controls.style.display=mobile()?'flex':'none'}
+  function fullscreen(active){
+   document.body.classList.toggle('lupo-mobile-fiche-fullscreen',active);
+   const btn=controls.querySelector('[data-action="fullscreen"]');
+   btn.textContent=active?'⤢ Quitter le plein écran':'⛶ Plein écran';
+   if(active&&page.requestFullscreen&&!document.fullscreenElement){
+    const p=page.requestFullscreen();if(p&&p.catch)p.catch(function(){});
+   }else if(!active&&document.fullscreenElement&&document.exitFullscreen){
+    const p=document.exitFullscreen();if(p&&p.catch)p.catch(function(){});
+   }
+  }
+  controls.addEventListener('click',function(ev){
+   const btn=ev.target.closest('button');if(!btn||!mobile())return;
+   switch(btn.dataset.action){
+    case 'minus':setZoom(zoom-.1);break;
+    case 'plus':setZoom(zoom+.1);break;
+    case 'fit':setZoom(1);break;
+    case 'fullscreen':fullscreen(!document.body.classList.contains('lupo-mobile-fiche-fullscreen'));break;
+   }
+  });
+  workspace.insertBefore(controls,workspace.firstChild);
+  showControls();
+  window.addEventListener('resize',showControls);
+  window.addEventListener('orientationchange',showControls);
+  document.addEventListener('fullscreenchange',function(){
+   if(!document.fullscreenElement&&!document.body.classList.contains('lupo-mobile-fiche-fullscreen')){
+    const btn=controls.querySelector('[data-action="fullscreen"]');if(btn)btn.textContent='⛶ Plein écran';
+   }
+  });
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
 </body>
 </html>
