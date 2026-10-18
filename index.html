@@ -3248,5 +3248,93 @@ init();
 })();
 </script>
 
+
+<style id="lupo-fullscreen-paper-fit-style">
+@media (max-width:760px){
+ body.lupo-mobile-fiche-fullscreen #page-notes{
+   padding:0!important;overflow:hidden!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-workspace{
+   display:flex!important;flex-direction:column!important;align-items:stretch!important;
+   width:100vw!important;height:100dvh!important;min-height:100dvh!important;
+   max-height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #lupo-mobile-view-controls{
+   position:fixed!important;top:max(6px,env(safe-area-inset-top))!important;left:8px!important;
+   z-index:100000!important;background:transparent!important;border:0!important;padding:0!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #lupo-mobile-view-controls button:not([data-action="fullscreen"]){display:none!important}
+ body.lupo-mobile-fiche-fullscreen #page-notes #lupo-mobile-view-controls [data-action="fullscreen"]{
+   background:#fff!important;color:#182033!important;border:1px solid #d0d5df!important;
+   box-shadow:0 2px 10px #0002!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-canvas-wrap{
+   position:absolute!important;inset:0!important;width:100vw!important;height:100dvh!important;
+   max-width:none!important;min-height:0!important;max-height:none!important;margin:0!important;
+   padding:0!important;overflow:hidden!important;display:block!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas{
+   position:absolute!important;left:50%!important;top:50%!important;
+   margin:0!important;max-width:none!important;flex:none!important;
+   transform-origin:center center!important;pointer-events:none!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas *{
+   pointer-events:none!important;user-select:none!important;-webkit-user-select:none!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas .note-resize-handle,
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas .note-vertex-handle{display:none!important}
+}
+</style>
+<script id="lupo-fullscreen-paper-fit-script">
+(function(){
+ 'use strict';
+ function init(){
+  const page=document.getElementById('page-notes');
+  if(!page||page.dataset.paperFitReady==='1')return;
+  page.dataset.paperFitReady='1';
+  const btn=document.querySelector('#lupo-mobile-view-controls [data-action="fullscreen"]');
+  if(!btn)return;
+  let active=false, saved=null, raf=0;
+  function canvas(){return page.querySelector('#notesCanvas')}
+  function fit(){
+   if(!active)return;
+   const c=canvas();const wrap=page.querySelector('.notes-canvas-wrap');
+   if(!c||!wrap)return;
+   const w=c.offsetWidth,h=c.offsetHeight;
+   const aw=window.innerWidth-12, ah=window.innerHeight-12;
+   if(!w||!h||!aw||!ah)return;
+   // Fit the entire sheet (including its background and all elements) in the viewport.
+   const scale=Math.min(aw/w,ah/h);
+   c.style.setProperty('left','50%','important');
+   c.style.setProperty('top','50%','important');
+   c.style.setProperty('transform-origin','center center','important');
+   c.style.setProperty('transform','translate(-50%,-50%) scale('+scale+')','important');
+   c.style.setProperty('pointer-events','none','important');
+   c.querySelectorAll('[contenteditable="true"]').forEach(el=>el.setAttribute('contenteditable','false'));
+  }
+  function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>requestAnimationFrame(fit))}
+  function enter(){
+   active=true;const c=canvas();
+   if(c)saved={left:c.style.left,top:c.style.top,transform:c.style.transform,origin:c.style.transformOrigin,pointer:c.style.pointerEvents};
+   schedule();window.addEventListener('resize',schedule);window.addEventListener('orientationchange',schedule);
+  }
+  function leave(){
+   active=false;window.removeEventListener('resize',schedule);window.removeEventListener('orientationchange',schedule);
+   const c=canvas();if(!c||!saved)return;
+   [['left','left'],['top','top'],['transform','transform'],['origin','transformOrigin'],['pointer','pointerEvents']].forEach(([k,p])=>{
+    if(saved[k])c.style[p]=saved[k];else c.style.removeProperty(p.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()));
+   });
+   saved=null;
+  }
+  btn.addEventListener('click',()=>setTimeout(()=>{
+   const now=document.body.classList.contains('lupo-mobile-fiche-fullscreen');
+   if(now&&!active)enter();else if(!now&&active)leave();
+  },80));
+  document.addEventListener('fullscreenchange',()=>{if(!document.body.classList.contains('lupo-mobile-fiche-fullscreen')&&active)leave()});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
 </body>
 </html>
