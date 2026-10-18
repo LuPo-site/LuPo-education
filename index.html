@@ -3171,5 +3171,82 @@ init();
 })();
 </script>
 
+
+<style id="lupo-fullscreen-fit-phone-style">
+@media (max-width:760px){
+ body.lupo-mobile-fiche-fullscreen #page-notes .notes-canvas-wrap{
+   position:relative!important; flex:1 1 auto!important; width:100%!important;
+   height:calc(100dvh - 64px)!important; min-height:0!important; max-height:none!important;
+   overflow:hidden!important; display:flex!important; align-items:center!important; justify-content:center!important;
+   padding:0!important; margin:0!important; box-sizing:border-box!important;
+ }
+ body.lupo-mobile-fiche-fullscreen #page-notes #notesCanvas{
+   position:absolute!important; left:50%!important; top:50%!important;
+   margin:0!important; flex:none!important; max-width:none!important;
+   transform-origin:center center!important; pointer-events:none!important;
+ }
+}
+</style>
+<script id="lupo-fullscreen-fit-phone-script">
+(function(){
+ 'use strict';
+ function init(){
+  const page=document.getElementById('page-notes');
+  if(!page||page.dataset.lupoFitPhone==='1')return;
+  page.dataset.lupoFitPhone='1';
+  const btn=document.querySelector('#lupo-mobile-view-controls [data-action="fullscreen"]');
+  if(!btn)return;
+  let active=false, resizeHandler=null, saved={};
+  function fit(){
+   if(!active||!window.matchMedia('(max-width:760px)').matches)return;
+   const canvas=page.querySelector('#notesCanvas');
+   const wrap=page.querySelector('.notes-canvas-wrap');
+   if(!canvas||!wrap)return;
+   const width=canvas.offsetWidth, height=canvas.offsetHeight;
+   if(!width||!height)return;
+   const availableW=Math.max(80,wrap.clientWidth-16);
+   const availableH=Math.max(80,wrap.clientHeight-16);
+   const scale=Math.min(availableW/width,availableH/height);
+   canvas.style.setProperty('left','50%','important');
+   canvas.style.setProperty('top','50%','important');
+   canvas.style.setProperty('transform-origin','center center','important');
+   canvas.style.setProperty('transform','translate(-50%,-50%) scale('+scale+')','important');
+   canvas.style.setProperty('pointer-events','none','important');
+   canvas.querySelectorAll('[contenteditable="true"]').forEach(el=>el.setAttribute('contenteditable','false'));
+  }
+  function enter(){
+   active=true;
+   const canvas=page.querySelector('#notesCanvas');
+   if(canvas){
+    saved.left=canvas.style.left;saved.top=canvas.style.top;saved.transform=canvas.style.transform;
+    saved.origin=canvas.style.transformOrigin;saved.pointer=canvas.style.pointerEvents;
+   }
+   requestAnimationFrame(()=>requestAnimationFrame(fit));
+   resizeHandler=()=>requestAnimationFrame(fit);
+   window.addEventListener('resize',resizeHandler);
+   window.addEventListener('orientationchange',resizeHandler);
+  }
+  function leave(){
+   active=false;
+   if(resizeHandler){window.removeEventListener('resize',resizeHandler);window.removeEventListener('orientationchange',resizeHandler);resizeHandler=null;}
+   const canvas=page.querySelector('#notesCanvas');
+   if(canvas){
+    for(const [key,prop] of [['left','left'],['top','top'],['transform','transform'],['origin','transformOrigin'],['pointer','pointerEvents']]){
+     if(saved[key])canvas.style[prop]=saved[key];else canvas.style.removeProperty(prop.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()));
+    }
+   }
+  }
+  btn.addEventListener('click',()=>setTimeout(()=>{
+   const now=document.body.classList.contains('lupo-mobile-fiche-fullscreen');
+   if(now&&!active)enter();else if(!now&&active)leave();
+  },50));
+  document.addEventListener('fullscreenchange',()=>{
+   if(!document.body.classList.contains('lupo-mobile-fiche-fullscreen')&&active)leave();
+  });
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
 </body>
 </html>
