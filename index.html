@@ -2934,5 +2934,89 @@ init();
 })();
 </script>
 
+
+<style id="lupo-editor-touch-fix">
+@media (max-width:760px){
+  #notesCanvas .note-element{ -webkit-user-select:text; user-select:text; }
+  #notesCanvas .note-element[contenteditable="true"]{ touch-action:pan-y; -webkit-user-select:text; user-select:text; }
+  #notesCanvas .note-resize-handle,
+  #notesCanvas .note-vertex-handle{display:none!important}
+  #notesCanvas .note-element.selected:not([contenteditable="true"]) .note-resize-handle,
+  #notesCanvas .note-element.selected:not([contenteditable="true"]) .note-vertex-handle{display:block!important}
+}
+#notesCanvas .note-element:not(.selected) .note-resize-handle,
+#notesCanvas .note-element:not(.selected) .note-vertex-handle{display:none!important}
+</style>
+<script id="lupo-editor-touch-fix-script">
+(function(){
+  'use strict';
+  function boot(){
+    const canvas=document.getElementById('notesCanvas');
+    if(!canvas || canvas.dataset.lupoTouchFix==='1') return;
+    canvas.dataset.lupoTouchFix='1';
+    let lastTapElement=null, lastTapAt=0;
+    const isMobile=()=>window.matchMedia && window.matchMedia('(max-width:760px)').matches;
+    function clearSelection(){
+      if(typeof selectNoteElement==='function') selectNoteElement(null);
+      else {
+        canvas.querySelectorAll('.note-element').forEach(el=>{
+          el.classList.remove('selected');
+          el.querySelectorAll('.note-resize-handle,.note-vertex-handle').forEach(h=>h.remove());
+        });
+      }
+      const toolbar=document.querySelector('#page-notes .lupo-context-toolbar');
+      if(toolbar) toolbar.classList.remove('has-selection');
+    }
+    canvas.addEventListener('click',function(ev){
+      if(ev.target===canvas || ev.target.classList.contains('notes-canvas-wrap')){
+        if(!canvas.querySelector('.note-element[contenteditable="true"]')) clearSelection();
+        lastTapElement=null; lastTapAt=0;
+        return;
+      }
+      const el=ev.target.closest('.note-element');
+      if(!el || !isMobile()) return;
+      if(el.dataset.noteType==='text' || el.dataset.noteType==='title' || el.dataset.noteType==='shape'){
+        const now=Date.now();
+        const isSecondTap=lastTapElement===el && now-lastTapAt<900;
+        lastTapElement=el; lastTapAt=now;
+        if(isSecondTap && !el.dataset.tableEditing){
+          try{
+            if(typeof noteRemember==='function') noteRemember();
+            if(typeof clearNoteHandles==='function') clearNoteHandles(el);
+            el.contentEditable='true';
+            el.focus({preventScroll:true});
+            const range=document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            const sel=window.getSelection();
+            sel.removeAllRanges(); sel.addRange(range);
+          }catch(_){}
+        }
+      }else{
+        lastTapElement=null; lastTapAt=0;
+      }
+    },true);
+    canvas.addEventListener('keydown',function(ev){
+      if(ev.key==='Escape'){
+        const editing=ev.target.closest('.note-element[contenteditable="true"]');
+        if(editing){editing.removeAttribute('contenteditable');editing.blur(); if(typeof selectNoteElement==='function')selectNoteElement(editing);}
+      }
+    });
+    document.addEventListener('pointerdown',function(ev){
+      if(!isMobile() || !canvas.contains(ev.target)) return;
+      if(ev.target===canvas && !canvas.querySelector('.note-element[contenteditable="true"]')) clearSelection();
+    },true);
+    // Hide handles whenever the element is no longer selected, including handles
+    // inserted by the original editor after a deselection.
+    const observer=new MutationObserver(function(){
+      canvas.querySelectorAll('.note-element:not(.selected) .note-resize-handle, .note-element:not(.selected) .note-vertex-handle')
+        .forEach(h=>h.remove());
+    });
+    observer.observe(canvas,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+
 </body>
 </html>
